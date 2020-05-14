@@ -1,5 +1,7 @@
 import React from "react";
 import { Col, Row, Container } from "reactstrap";
+import Host from "../lobby/Host";
+import Join from "../lobby/Join";
 
 const Lobby = () => {
   return (
