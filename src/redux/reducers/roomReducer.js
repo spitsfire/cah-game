@@ -19,6 +19,7 @@ const initialState = {
   round: null,
   blackCard: null,
   players: [],
+  hand: [],
 };
 
 export default (state = initialState, action) => {

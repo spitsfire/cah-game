@@ -14,9 +14,43 @@ import {
 import { db } from "../../services/firebase";
 import ShortUniqueId from "short-unique-id";
 import { navigate } from "@reach/router";
+const white = require("../../assets/data/whiteCards");
+const black = require("../../assets/data/blackCards");
 
 const uid = new ShortUniqueId();
 
+// LOCAL FUNCTIONS
+const shuffle = (cards) => {
+  for (let i = cards.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  return cards;
+};
+
+const grabBlack = (room) => {
+  let card = room.deck.blackCards[room.deck.blackCards.length - 1];
+  let cards = room.deck.blackCards.slice();
+  cards.length = cards.length - 1;
+  return [card, cards];
+};
+const dealWhite = (room) => {
+  let count = 0;
+  let whiteCards = room.deck.whiteCards.slice();
+  let players = room.players.slice();
+  for (let player of players) {
+    console.log("One player", player);
+    console.log("Player's hand", player.hand.length);
+    while (player.hand.length < 10) {
+      player.hand.push(whiteCards.pop());
+      count++;
+    }
+  }
+  whiteCards.length -= count;
+  return [players, whiteCards];
+};
+
+// EXPORTS
 export const checkCode = (code) => async (dispatch) => {
   if (code !== "") {
     const room = await db.collection("rooms").doc(code).get();
@@ -49,7 +83,6 @@ export const createRoom = ({ name, cap, rounds }) => async (dispatch) => {
       .doc(puid)
       .set({
         points: 0,
-        hand: [],
         name: name,
       })
       .then(() => {
@@ -67,7 +100,10 @@ export const createRoom = ({ name, cap, rounds }) => async (dispatch) => {
             rounds: parseInt(rounds),
             hasStarted: false,
             players: [puid],
-            deck: {},
+            deck: {
+              whiteCards: shuffle(white),
+              blackCards: shuffle(black),
+            },
             host: puid,
           })
           .then(async () => {
@@ -99,7 +135,6 @@ export const joinRoom = (name, code) => async (dispatch) => {
       .doc(puid)
       .set({
         points: 0,
-        hand: [],
         name: name,
       })
       .then(async () => {
@@ -119,7 +154,14 @@ export const joinRoom = (name, code) => async (dispatch) => {
     });
   }
 };
-
+export const startGame = () => async (dispatch) => {
+  const room = await db
+    .collection("rooms")
+    .doc(localStorage.getItem("ruid"))
+    .update({
+      deck: { whiteCards: "", blackCards: "" },
+    });
+};
 export const resetRoom = () => (dispatch) => {
   dispatch({
     type: RESET_ROOM,
