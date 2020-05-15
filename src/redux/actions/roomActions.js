@@ -15,6 +15,8 @@ import { db } from "../../services/firebase";
 import ShortUniqueId from "short-unique-id";
 import { navigate } from "@reach/router";
 
+const uid = new ShortUniqueId();
+
 // export const getRooms = () => async (dispatch) => {
 //   try {
 //     console.log(res);
@@ -33,34 +35,36 @@ import { navigate } from "@reach/router";
 
 export const createRoom = ({ name, cap, rounds }) => (dispatch) => {
   try {
-    const puid = new ShortUniqueId();
-    db.ref("players/" + puid)
+    const puid = uid();
+    db.collection("players")
+      .doc(puid)
       .set({
         points: 0,
         hand: [],
         name: name,
       })
-      .then((player) => {
-        const ruid = new ShortUniqueId();
-        db.ref("rooms/" + ruid)
+      .then(() => {
+        const ruid = uid();
+        db.collection("rooms")
+          .doc(ruid)
           .set({
             currentRound: {
               czar: null,
               blackCard: null,
               choices: [],
-              round: rounds,
+              round: null,
             },
-            capacity: cap,
-            rounds: rounds,
+            capacity: parseInt(cap),
+            rounds: parseInt(rounds),
             hasStarted: false,
-            players: [player],
+            players: [puid],
             deck: {},
             host: puid,
           })
-          .then((room) => {
-            console.log("NEW ROOM", room);
+          .then(() => {
             localStorage.setItem("puid", puid);
             localStorage.setItem("ruid", ruid);
+            navigate("/room/" + ruid);
           });
       });
   } catch (err) {

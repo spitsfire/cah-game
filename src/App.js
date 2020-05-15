@@ -1,5 +1,6 @@
 import React from "react";
 import { Provider } from "react-redux";
+import { Router } from "@reach/router";
 import store from "./store";
 import Lobby from "./components/pages/Lobby";
 import Header from "./components/layout/Header";
@@ -10,7 +11,9 @@ function App() {
     <Provider store={store}>
       <div className="App">
         <Header />
-        <Lobby />
+        <Router>
+          <Lobby path="/" />
+        </Router>
       </div>
     </Provider>
   );
