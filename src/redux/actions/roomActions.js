@@ -1,6 +1,7 @@
 import {
   ADD_ROOM,
   GET_ROOM,
+  CHECK_ROOM,
   START_GAME,
   SET_ROUND,
   DISABLE_ROOM,
@@ -16,21 +17,22 @@ import { navigate } from "@reach/router";
 
 const uid = new ShortUniqueId();
 
-export const getRoom = (id) => (dispatch) => {
+export const checkCode = (code) => async (dispatch) => {
+  if (code !== "") {
+    const room = await db.collection("rooms").doc(code).get();
+    dispatch({
+      type: CHECK_ROOM,
+      payload: room.exists,
+    });
+  }
+};
+
+export const getRoom = (id) => async (dispatch) => {
   try {
-    const docRef = db.collection("rooms").doc(id);
-    docRef.get().then((doc) => {
-      try {
-        dispatch({
-          type: GET_ROOM,
-          payload: doc.data(),
-        });
-      } catch (err) {
-        dispatch({
-          type: CATCH_ERR,
-          payload: err,
-        });
-      }
+    const room = await db.collection("rooms").doc(id).get();
+    dispatch({
+      type: GET_ROOM,
+      payload: room.data(),
     });
   } catch (err) {
     dispatch({
@@ -75,7 +77,7 @@ export const createRoom = ({ name, cap, rounds }) => async (dispatch) => {
             const room = await db.collection("rooms").doc(ruid).get();
             dispatch({
               type: ADD_ROOM,
-              payload: { player, room },
+              payload: { player: player.data(), room: room.data() },
             });
             navigate("/room/" + ruid);
           });
@@ -88,7 +90,7 @@ export const createRoom = ({ name, cap, rounds }) => async (dispatch) => {
   }
 };
 
-export const joinRoom = ({ name, code }) => async (dispatch) => {
+export const joinRoom = (name, code) => async (dispatch) => {
   try {
     const room = await db.collection("rooms").doc(code).get();
     if (room.hasStarted) throw "Game has already started.";
@@ -106,7 +108,7 @@ export const joinRoom = ({ name, code }) => async (dispatch) => {
         const player = await db.collection("players").doc(puid).get();
         dispatch({
           type: ADD_ROOM,
-          payload: { player, room },
+          payload: { player: player.data(), room: room.data() },
         });
         navigate("/room/" + code);
       });
@@ -116,6 +118,12 @@ export const joinRoom = ({ name, code }) => async (dispatch) => {
       payload: err,
     });
   }
+};
+
+export const resetRoom = () => (dispatch) => {
+  dispatch({
+    type: RESET_ROOM,
+  });
 };
 
 export const setLoading = () => {
