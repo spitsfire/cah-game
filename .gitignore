@@ -24,3 +24,4 @@ yarn-error.log*
 
 /src/assets/data/player.json
 /src/assets/data/room.json
+src/services/firebase.js
