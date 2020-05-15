@@ -1,7 +1,7 @@
 import {
-  GET_ROOMS,
-  GET_ROOM,
   ADD_ROOM,
+  GET_ROOM,
+  CHECK_ROOM,
   START_GAME,
   SET_ROUND,
   DISABLE_ROOM,
@@ -17,23 +17,32 @@ import { navigate } from "@reach/router";
 
 const uid = new ShortUniqueId();
 
-// export const getRooms = () => async (dispatch) => {
-//   try {
-//     console.log(res);
+export const checkCode = (code) => async (dispatch) => {
+  if (code !== "") {
+    const room = await db.collection("rooms").doc(code).get();
+    dispatch({
+      type: CHECK_ROOM,
+      payload: room.exists,
+    });
+  }
+};
 
-//     dispatch({
-//       type: GET_ROOMS,
-//       payload: res.data,
-//     });
-//   } catch (err) {
-//     dispatch({
-//       type: CATCH_ERR,
-//       payload: err,
-//     });
-//   }
-// };
+export const getRoom = (id) => async (dispatch) => {
+  try {
+    const room = await db.collection("rooms").doc(id).get();
+    dispatch({
+      type: GET_ROOM,
+      payload: room.data(),
+    });
+  } catch (err) {
+    dispatch({
+      type: CATCH_ERR,
+      payload: err,
+    });
+  }
+};
 
-export const createRoom = ({ name, cap, rounds }) => (dispatch) => {
+export const createRoom = ({ name, cap, rounds }) => async (dispatch) => {
   try {
     const puid = uid();
     db.collection("players")
@@ -61,9 +70,15 @@ export const createRoom = ({ name, cap, rounds }) => (dispatch) => {
             deck: {},
             host: puid,
           })
-          .then(() => {
+          .then(async () => {
             localStorage.setItem("puid", puid);
             localStorage.setItem("ruid", ruid);
+            const player = await db.collection("players").doc(puid).get();
+            const room = await db.collection("rooms").doc(ruid).get();
+            dispatch({
+              type: ADD_ROOM,
+              payload: { player: player.data(), room: room.data() },
+            });
             navigate("/room/" + ruid);
           });
       });
@@ -73,6 +88,42 @@ export const createRoom = ({ name, cap, rounds }) => (dispatch) => {
       payload: err,
     });
   }
+};
+
+export const joinRoom = (name, code) => async (dispatch) => {
+  try {
+    const room = await db.collection("rooms").doc(code).get();
+    if (room.hasStarted) throw "Game has already started.";
+    const puid = uid();
+    db.collection("players")
+      .doc(puid)
+      .set({
+        points: 0,
+        hand: [],
+        name: name,
+      })
+      .then(async () => {
+        localStorage.setItem("puid", puid);
+        localStorage.setItem("ruid", code);
+        const player = await db.collection("players").doc(puid).get();
+        dispatch({
+          type: ADD_ROOM,
+          payload: { player: player.data(), room: room.data() },
+        });
+        navigate("/room/" + code);
+      });
+  } catch (err) {
+    dispatch({
+      type: CATCH_ERR,
+      payload: err,
+    });
+  }
+};
+
+export const resetRoom = () => (dispatch) => {
+  dispatch({
+    type: RESET_ROOM,
+  });
 };
 
 export const setLoading = () => {
