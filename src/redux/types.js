@@ -1,6 +1,5 @@
-export const GET_ROOMS = "GET_ROOMS";
-export const GET_ROOM = "GET_ROOM";
 export const ADD_ROOM = "ADD_ROOM";
+export const GET_ROOM = "GET_ROOM";
 export const START_GAME = "START_GAME";
 export const SET_ROUND = "SET_ROUND";
 export const DISABLE_ROOM = "DISABLE_ROOM";

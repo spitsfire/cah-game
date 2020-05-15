@@ -1,7 +1,6 @@
 import {
-  GET_ROOMS,
-  GET_ROOM,
   ADD_ROOM,
+  GET_ROOM,
   START_GAME,
   SET_ROUND,
   DISABLE_ROOM,
@@ -19,12 +18,16 @@ const initialState = {
   round: null,
   blackCard: null,
   players: [],
+  err: null,
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
     case CATCH_ERR:
-      console.error(action.payload);
+      return {
+        ...state,
+        err: action.payload,
+      };
     case GET_ROOM:
       return {
         ...state,
@@ -33,8 +36,8 @@ export default (state = initialState, action) => {
     case ADD_ROOM:
       return {
         ...state,
-        room: action.payload,
-        players: [...state.players, action.payload.host],
+        room: action.payload.room,
+        players: [...state.players, action.payload.player],
       };
     default:
       return state;
