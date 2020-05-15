@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { Card, Input, Label, Button, Form } from "reactstrap";
+import { connect } from "react-redux";
+import { createRoom } from "./../../redux/actions/roomActions";
 
-const Host = () => {
+const Host = ({ createRoom }) => {
   // STATE
-  const [room, setRoom] = useState("");
   const [name, setName] = useState("");
   const [cap, setCap] = useState();
   const [rounds, setRounds] = useState();
 
   // FUNCTIONS
   const onSubmit = () => {
-    // waiting for reducer function
+    createRoom({ name, cap, rounds });
   };
 
   return (
@@ -19,8 +20,6 @@ const Host = () => {
       <Form className="register-form">
         <Label>Your Name</Label>
         <Input type="text" onChange={(e) => setName(e.target.value)} />
-        <Label>Room Name</Label>
-        <Input type="text" onChange={(e) => setRoom(e.target.value)} />
         <Label>
           Room Capacity <small>(incl. host)</small>
         </Label>
@@ -50,4 +49,8 @@ const Host = () => {
   );
 };
 
-export default Host;
+const mapStateToProps = (state) => ({
+  roomReducer: state.roomReducer,
+});
+
+export default connect(mapStateToProps, { createRoom })(Host);
