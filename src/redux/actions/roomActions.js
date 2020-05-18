@@ -28,26 +28,18 @@ const shuffle = (cards) => {
   return cards;
 };
 
-const grabBlack = (room) => {
-  let card = room.deck.blackCards[room.deck.blackCards.length - 1];
-  let cards = room.deck.blackCards.slice();
-  cards.length = cards.length - 1;
-  return [card, cards];
-};
-const dealWhite = (room) => {
+const dealWhite = (room, whiteCards) => {
   let count = 0;
-  let whiteCards = room.deck.whiteCards.slice();
-  let players = room.players.slice();
-  for (let player of players) {
-    console.log("One player", player);
-    console.log("Player's hand", player.hand.length);
-    while (player.hand.length < 10) {
-      player.hand.push(whiteCards.pop());
+  for (let player of room.players) {
+    let temp = { puid: player, hand: [] };
+    while (temp.hand.length < 10) {
+      temp.hand.push(whiteCards.pop());
       count++;
     }
+    db.collection("players").doc(temp.puid).update({ hand: temp.hand });
   }
   whiteCards.length -= count;
-  return [players, whiteCards];
+  return whiteCards;
 };
 
 // EXPORTS
@@ -155,11 +147,24 @@ export const joinRoom = (name, code) => async (dispatch) => {
   }
 };
 export const startGame = () => async (dispatch) => {
-  const room = await db
+  const dbRroom = await db
     .collection("rooms")
     .doc(localStorage.getItem("ruid"))
+    .data();
+  let whiteCards = dbRoom.deck.whiteCards.slice();
+  let blackCard = dbRoom.deck.blackCards.pop();
+  let deckRemainder = dealWhite(dbRroom, whiteCards);
+  db.collection("rooms")
+    .doc(localStorage.getItem("ruid"))
     .update({
-      deck: { whiteCards: "", blackCards: "" },
+      hasStarted: true,
+      currentRound: {
+        czar: dbRoom.players[0],
+        blackCard: blackCard,
+        round: 1,
+        choices: null,
+      },
+      deck: { blackCards: dbRoom.deck.blackCards, whiteCards: deckRemainder },
     });
 };
 export const resetRoom = () => (dispatch) => {
