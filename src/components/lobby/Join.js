@@ -7,7 +7,6 @@ const Join = () => {
   // STATE
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [isValid, setValid] = useState(false);
 
   //FUNCTIONS
   const onSubmit = () => {

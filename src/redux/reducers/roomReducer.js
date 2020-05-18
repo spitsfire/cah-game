@@ -21,6 +21,7 @@ const initialState = {
   blackCard: null,
   players: [],
   hand: [],
+  isValid: false,
 };
 
 export default (state = initialState, action) => {
