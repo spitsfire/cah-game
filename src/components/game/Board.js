@@ -24,6 +24,17 @@ const Board = ({ roomReducer: { room, currentCzar }, startGame }) => {
     );
   }, []);
 
+  useEffect(() => {
+    db.collection("rooms").doc(
+      localStorage
+        .getItem("ruid")
+        .onSnapshot()
+        .then((change) => {
+          console.log(change);
+        })
+    );
+  });
+
   return <div></div>;
 };
 
@@ -31,4 +42,4 @@ const mapStateToProps = (state) => ({
   roomReducer: state.roomReducer,
 });
 
-export default connect(mapStateToProps, { startGame })(Host);
+export default connect(mapStateToProps, { startGame })(Board);

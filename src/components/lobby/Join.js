@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
+import { checkCode, joinRoom } from "./../../redux/actions/roomActions";
 import { Card, Form, Label, Input, Button } from "reactstrap";
 
 const Join = () => {
   // STATE
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [isValid, setValid] = useState(false);
 
   //FUNCTIONS
   const onSubmit = () => {
-    //waiting on reducer function
+    joinRoom(name, code);
   };
+
+  useEffect(() => {
+    if (name !== "") {
+      checkCode(code);
+    }
+  }, [code, name]);
 
   return (
     <Card className="card-custom ml-auto mr-auto" color="danger">
@@ -24,6 +33,8 @@ const Join = () => {
           onChange={(e) => setCode(e.target.value)}
         />
         <Button
+          style={!isValid ? { cursor: "default" } : { cursor: "pointer" }}
+          disabled={!isValid}
           onClick={onSubmit}
           className="btn-block btn-round mb-4"
           color="secondary"
@@ -35,4 +46,8 @@ const Join = () => {
   );
 };
 
-export default Join;
+const mapStateToProps = (state) => ({
+  roomReducer: state.roomReducer,
+});
+
+export default connect(mapStateToProps, { checkCode, joinRoom })(Join);

@@ -52,7 +52,7 @@ export const checkCode = (code) => async (dispatch) => {
     });
   }
 };
-git;
+
 export const getRoom = (id) => async (dispatch) => {
   try {
     const room = await db.collection("rooms").doc(id).get();
@@ -147,13 +147,13 @@ export const joinRoom = (name, code) => async (dispatch) => {
   }
 };
 export const startGame = () => async (dispatch) => {
-  const dbRroom = await db
+  const dbRoom = await db
     .collection("rooms")
     .doc(localStorage.getItem("ruid"))
     .data();
   let whiteCards = dbRoom.deck.whiteCards.slice();
   let blackCard = dbRoom.deck.blackCards.pop();
-  let deckRemainder = dealWhite(dbRroom, whiteCards);
+  let deckRemainder = dealWhite(dbRoom, whiteCards);
   db.collection("rooms")
     .doc(localStorage.getItem("ruid"))
     .update({

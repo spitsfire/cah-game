@@ -1,4 +1,5 @@
 import {
+  CHECK_ROOM,
   GET_ROOMS,
   GET_ROOM,
   ADD_ROOM,
@@ -36,6 +37,11 @@ export default (state = initialState, action) => {
         ...state,
         room: action.payload,
         players: [...state.players, action.payload.host],
+      };
+    case CHECK_ROOM:
+      return {
+        ...state,
+        isValid: action.payload,
       };
     default:
       return state;
